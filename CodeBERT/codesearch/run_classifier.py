@@ -30,16 +30,17 @@ from tensorboardX import SummaryWriter
 from tqdm import tqdm, trange
 
 from transformers import (WEIGHTS_NAME, get_linear_schedule_with_warmup, AdamW,
-                          RobertaConfig,
-                          RobertaForSequenceClassification,
-                          RobertaTokenizer)
+                          RobertaConfig,AutoConfig,
+                          RobertaForSequenceClassification,AutoModelForSequenceClassification,
+                          RobertaTokenizer,AutoTokenizer )
 
 from utils import (compute_metrics, convert_examples_to_features,
                         output_modes, processors)
 
 logger = logging.getLogger(__name__)
 
-MODEL_CLASSES = {'roberta': (RobertaConfig, RobertaForSequenceClassification, RobertaTokenizer)}
+MODEL_CLASSES = {'roberta': (RobertaConfig, RobertaForSequenceClassification, RobertaTokenizer),
+                'deberta': (AutoConfig, AutoModelForSequenceClassification, AutoTokenizer),}
 
 
 def set_seed(args):
@@ -98,7 +99,7 @@ def train(args, train_dataset, model, tokenizer, optimizer):
             batch = tuple(t.to(args.device) for t in batch)
             inputs = {'input_ids': batch[0],
                       'attention_mask': batch[1],
-                      'token_type_ids': batch[2] if args.model_type in ['bert', 'xlnet'] else None,
+                      'token_type_ids': batch[2] if args.model_type in ['bert', 'xlnet', 'deberta'] else None,
                       # XLM don't use segment_ids
                       'labels': batch[3]}
             ouputs = model(**inputs)
@@ -230,7 +231,7 @@ def evaluate(args, model, tokenizer, checkpoint=None, prefix="", mode='dev'):
             with torch.no_grad():
                 inputs = {'input_ids': batch[0],
                           'attention_mask': batch[1],
-                          'token_type_ids': batch[2] if args.model_type in ['bert', 'xlnet'] else None,
+                          'token_type_ids': batch[2] if args.model_type in ['bert', 'xlnet', 'deberta'] else None,
                           # XLM don't use segment_ids
                           'labels': batch[3]}
 
